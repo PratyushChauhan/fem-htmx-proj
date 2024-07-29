@@ -1,14 +1,53 @@
 {{block "index" .}}
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title></title>
-        <link href="css/style.css" rel="stylesheet">
-    </head>
-    <body>
-        Count {{.Count}} 
-    </body>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://unpkg.com/htmx.org/dist/htmx.js"></script>
+    <title></title>
+    <link href="css/style.css" rel="stylesheet">
+</head>
+
+<body>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.body.addEventListener('htmx:beforeSwap', (evt) => {
+                if (evt.detail.xhr.status === 422) {
+                    evt.detail.shouldSwap = true;
+                    evt.detail.IsError = false;
+                }
+            });
+        });
+    </script>
+    {{template "form" .Form}}
+    <hr>
+    {{template "display" .Data}}
+</body>
+
 </html>
+{{end}}
+{{block "form" .}}
+<form hx-post="/contacts" hx-target="this" hx-swap="outerHTML">
+    name: <input {{if .Values.name}} value="{{.Values.name}}" {{end}} type="text" name="name">
+    email: <input {{if .Values.email}} value="{{.Values.email}}" {{end}} type="text" name="email">
+    {{if .Errors.email}}
+    <div style="color: red">
+        {{.Errors.email}}
+    </div>
+    {{end}}
+    <button type="submit">Submit Contacts</button>
+</form>
+{{end}}
+
+{{block "display" .}}
+<div id="list" style="display: flex;flex-direction:column">
+    {{ range .Contacts }}
+    <div>
+        Name: <span>{{.Name}}</span>
+        email: <span>{{.Email}}</span>
+    </div>
+    {{end}}
+</div>
 {{end}}
